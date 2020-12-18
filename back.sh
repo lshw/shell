@@ -81,7 +81,7 @@ function rsyncb() {
  #先备份 /etc目录，
  rsynca "${host}:/etc/" $2/etc/
  #再根据  被备份系统的/etc/bak.list 设置，备份其它目录
-cat $bakpath/$2/etc/bak.list |while read a
+cat $bakpath/$2/etc/bak.list |while read a txt
  do
   dir=`echo $a |tr -d "\r\n \t"`
   if [ "$dir" != "" ] ; then
@@ -138,9 +138,16 @@ echo > $bakpath/remotebak0.log
 #单个备份
 #rsyncb 192.168.14.1 al-lims
 
-cat $bakpath/back.txt |while read name host time
+cat $bakpath/back.txt |while read name host txt
 do
-  if [ "`ifconfig br0|grep $host`" ] ; then
+  if [ "a$host" == "a" ] ; then
+    continue
+  fi
+  name=`basename $name|tr -d ' \t'`
+  if [ ${name:0:1} == "#" ] ; then
+    continue
+  fi
+  if [ "`ifconfig |grep $host`" ] ; then
     continue
   fi
   echo $name $host
