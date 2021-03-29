@@ -1,17 +1,38 @@
 #!/bin/bash
 # /usr/local/sbin/ports.sh  remote_ip  port_min port_max
-if [ "a$3" == "a" ] ;then
-echo $0 remote_ip port_min port_max
-exit
+if [ "a$2" == "a" ] ;then
+ echo $0 remote_ip port [port_max]
+ exit
 fi
-local_ip=`ifconfig |grep 'inet addr' |grep -v 127.0.0 |tr ':' ' '|awk '{print $3}'|grep -v '^10.'|grep -v '^192.168.'|grep -v '^172.'`
-remote_ip=$1
-port_min=$2
-port_max=$3
 
-iptables -t nat -D PREROUTING -d $local_ip -p udp -m multiport --dport $port_min:$port_max -j DNAT --to $remote_ip
-iptables -t nat -A PREROUTING -d $local_ip -p udp -m multiport --dport $port_min:$port_max -j DNAT --to $remote_ip
-iptables -t nat -D PREROUTING -d $local_ip -p tcp -m multiport --dport $port_min:$port_max -j DNAT --to $remote_ip
-iptables -t nat -A PREROUTING -d $local_ip -p tcp -m multiport --dport $port_min:$port_max -j DNAT --to $remote_ip
-iptables -t nat -D POSTROUTING -d $remote_ip  -j SNAT --to $local_ip
-iptables -t nat -A POSTROUTING -d $remote_ip  -j SNAT --to $local_ip
+if [ "a$3" == "a" ] ;then
+ports=$2;
+else
+ports=$2:$3
+fi
+
+local_eth=`ip route list |grep default|awk '{printf $5}'`
+
+local_ip=`ifconfig $local_eth |grep 'inet addr' |tr ':' ' '|awk '{print $3}'`
+if [ "a$local_ip" == "a" ] ; then
+local_ip=`ifconfig $local_eth |grep 'inet ' |awk '{print $2}'`
+fi
+remote_ip=$1
+if [ "$local_ip" == "$remote_ip" ] ; then
+ exit
+fi
+
+echo 1 >/proc/sys/net/ipv4/ip_forward
+
+iptables -t nat -L -n >/tmp/${remote_ip}_${2}.log
+
+if ! [ "`grep ^DNAT /tmp/${remote_ip}_${2}.log |grep ${remote_ip}|grep ${ports} |grep ${local_ip}|grep tcp`" ] ; then
+ iptables -t nat -I PREROUTING -d $local_ip -p tcp -m multiport --dport $ports -j DNAT --to $remote_ip
+fi
+if ! [ "`grep ^DNAT /tmp/${remote_ip}_${2}.log |grep ${remote_ip}|grep ${ports} |grep ${local_ip}|grep udp`" ] ; then
+ iptables -t nat -I PREROUTING -d $local_ip -p udp -m multiport --dport $ports -j DNAT --to $remote_ip
+fi
+if ! [ "`grep ^SNAT /tmp/${remote_ip}_${2}.log |grep ${remote_ip}|grep ${local_ip}`" ] ; then
+ iptables -t nat -I POSTROUTING -d $remote_ip  -j SNAT --to $local_ip
+fi
+rm /tmp/${remote_ip}_${2}.log
