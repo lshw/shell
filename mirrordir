@@ -1,7 +1,12 @@
 #!/bin/sh
-if !  [ "$2" ]
-then
-echo mirrordir dst src
+if !  [ "$2" ] ; then
+echo mirrordir src dst
 exit
 fi
+
+if [ -h $2 ] ; then
+ rm $2
+ mkdir $2
+fi
+
 rsync --no-iconv -a8Hvz --delete-before --delete-excluded $1/ $2  $3
