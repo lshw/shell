@@ -153,7 +153,7 @@ do
   echo $name $host
   rsyncb   $host $name
 done
-
+df -h $bakpath > $bakpath/df.txt
 #mirrordir $bakpath 192.168.2.5:/home/lims
 cat $bakpath/remotebak0.log >> $bakpath/remotebak.log
 
