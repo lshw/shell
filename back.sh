@@ -7,7 +7,7 @@
 #本机没有私钥的话， 生成私钥：ssh-keygen, 复制公钥到远程:ssh-copy-id 192.168.1.1
 #备份的保存主目录 在命令行参数1, 如果不存在参数1,那就用本备份文件所在的目录做保存目录
 #备份的服务器列表在 保存主目录下的back.txt 每行用空格间隔2个参数， 前面是目录名，后面的是服务器地址
-#每个远程主机的etc目录 以及远程主机的etc/back.list里列出来的每一个目录，都会备份回来
+#每个远程主机的etc目录 以及远程主机的etc/bak.list里列出来的每一个目录，都会备份回来
 #要求bakpath是建立在btrfs文件系统上， 使用btrfs的快照功能实现每日快照
 #https://github.com/lshw/shell/back.sh
 
@@ -83,7 +83,7 @@ function rsyncb() {
  #再根据  被备份系统的/etc/bak.list 设置，备份其它目录
 cat $bakpath/$2/etc/bak.list |while read a txt
  do
-  dir=`echo $a |tr -d "\r\n \t"`
+  dir=`echo $a |tr -d "\r\n \t\."`
   if [ "$dir" != "" ] ; then
    echo $dir
    #	if [ "`basename $dir`" == "mysql" ] ; then
@@ -127,12 +127,15 @@ else
 fi
 
 #建立每日只读快照
+mkdir -p ${bakpath}_snapshot
 snapshot=${bakpath}_snapshot/$dir
 echo 建立快照 $snapshot
 if [ -x $snapshot ] ; then
  btrfs sub delete $snapshot
 fi
 btrfs sub snapshot -r $bakpath $snapshot
+btrfs sub delete ${bakpatch}_snapshot/now
+btrfs sub snapshot -r $bakpath ${bakpatch}_snapshot/now
 echo > $bakpath/remotebak0.log
 
 #单个备份
@@ -143,7 +146,7 @@ do
   if [ "a$host" == "a" ] ; then
     continue
   fi
-  name=`basename $name|tr -d ' \t'`
+  name=`basename $name|tr -d ' \t\.\\/'`
   if [ ${name:0:1} == "#" ] ; then
     continue
   fi
@@ -153,7 +156,8 @@ do
   echo $name $host
   rsyncb   $host $name
 done
-df -h $bakpath > $bakpath/df.txt
+
+df -h $backpath >$backpath/df.txt
 #mirrordir $bakpath 192.168.2.5:/home/lims
 cat $bakpath/remotebak0.log >> $bakpath/remotebak.log
 
