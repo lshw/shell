@@ -11,3 +11,4 @@ back.sh 远程备份系统， 支持把多个远程主机的不同的目录文�
 mysqlbak.sh 做每日快照， 日备份保留最近180天， 周备份和月备份不做自动清理  
 sql_dump_struct.sh 导出php业务系统的mysql库表结构， 具体使用方法， 看脚本内的注释  
 ghost.sh 对当前linux系统 的系统打包成tar.xz   
+array_fix.php php的程序的数组的key，如果是字符串，并且没有加引号的, 加上引号, 因为在php7会警告这个问题, 并在php8直接出错 
