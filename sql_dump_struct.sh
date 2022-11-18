@@ -46,6 +46,6 @@ fi
 
 echo "<?php
 /*" >sql.php
- mysqldump  --no-data -u $user -h $server -P $port -p$passwd $db |grep -v -e '^--' -e "^/\*" -e '^DROP' -e "^  KEY " |sed  "s/ AUTO_INCREMENT=[0-9]*//" |sed  '/^$/d' |sed 's/;/;\n/g' >>sql.php
+ mysqldump  --no-data -u $user -h $server -P $port -p$passwd $db |grep -v -e '^--' -e "^/\*" -e '^DROP' |sed  "s/ AUTO_INCREMENT=[0-9]*//" |sed  '/^$/d' |sed 's/;/;\n/g' >>sql.php
  echo \*/ >>sql.php
 
