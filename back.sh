@@ -134,8 +134,8 @@ if [ -x $snapshot ] ; then
  btrfs sub delete $snapshot
 fi
 btrfs sub snapshot -r $bakpath $snapshot
-btrfs sub delete ${bakpatch}_snapshot/now
-btrfs sub snapshot -r $bakpath ${bakpatch}_snapshot/now
+btrfs sub delete ${bakpath}_snapshot/now
+btrfs sub snapshot -r $bakpath ${bakpath}_snapshot/now
 echo > $bakpath/remotebak0.log
 
 #单个备份
