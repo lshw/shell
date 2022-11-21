@@ -5,12 +5,9 @@ if [ "a$2" == "a" ] ;then
  exit
 fi
 
-local_eth=`ip route list |grep default|awk '{printf $5}'`
+local_eth=`ip -4 route list |grep default |head -n 1 |awk '{printf $5}'`
 
-local_ip=`ifconfig $local_eth |grep 'inet addr' |tr ':' ' '|awk '{print $3}'`
-if [ "a$local_ip" == "a" ] ; then
- local_ip=`ifconfig $local_eth |grep 'inet ' |awk '{print $2}'`
-fi
+local_ip=`ip -4 addr list dev $local_eth |grep 'inet ' |tr '/' ' '|awk '{print $2}'`
 local_port=$1
 remote_ip=${2%:*}
 remote_port=${2#*:}
