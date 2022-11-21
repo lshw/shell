@@ -150,9 +150,6 @@ do
   if [ ${name:0:1} == "#" ] ; then
     continue
   fi
-  if [ "`ifconfig |grep $host`" ] ; then
-    continue
-  fi
   echo $name $host
   rsyncb   $host $name
 done
