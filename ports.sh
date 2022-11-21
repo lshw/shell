@@ -6,17 +6,18 @@ if [ "a$2" == "a" ] ;then
 fi
 
 if [ "a$3" == "a" ] ;then
-ports=$2;
+ ports=$2
 else
-ports=$2:$3
+ if [ "a$3" == "a$2" ] ; then
+  ports=$2
+ else
+  ports=$2:$3
+ fi
 fi
 
-local_eth=`ip route list |grep default|awk '{printf $5}'`
+local_eth=`ip -4 route list |grep default |head -n 1 |awk '{printf $5}'`
 
-local_ip=`ifconfig $local_eth |grep 'inet addr' |tr ':' ' '|awk '{print $3}'`
-if [ "a$local_ip" == "a" ] ; then
-local_ip=`ifconfig $local_eth |grep 'inet ' |awk '{print $2}'`
-fi
+local_ip=`ip -4 addr list dev $local_eth |grep 'inet ' |tr '/' ' ' |awk '{print $2}'`
 remote_ip=$1
 if [ "$local_ip" == "$remote_ip" ] ; then
  exit
