@@ -37,50 +37,38 @@ for ($i0=0; $i0<$lines; $i0++) {
     $bef='';
     for ($i=0; $i<strlen($a); $i++) {
         $c=$a[$i];
-        if ($skip != 0) {
-            switch ($skip) {
-                case 1://注释中
-                    if ($bef == '*' and $c=='/') {
-                        $skip = 0;
-                    }
-                    break;
-                case 2: //单引号字符串后半拉
-                    if ($bef != '\\' and $c=="'") {
-                        $skip = 0;
-                    }
-                    break;
-                case 3: //双引号字符串后半拉
-                    if ($bef != '\\' and $c=='"') {
-                        $skip = 0;
-                    }
-                    break;
-            }
+        if ($skip == 1) {//注释中
             $o.=$c;
+            if ($bef == '*' and $c=='/') {
+                $skip = 0;
+            }
             $bef = $c;
             continue;
         }
-
         switch ($t) {
             case 0: //先找'['
-                if ($bef != '\\' and $c == "'") {
-                    $skip = 2; //后面是单引号字符串， 跳过
-                } elseif ($bef != '\\' and $c == "'") {
-                    $skip = 3; //后面是双引号字符串， 跳过
-                } elseif ($bef == '/' and $c == '*') { //开始注释
-                    $skip = 1;
+                if ($bef == '/' and $c == '/') { //后面的不做处理
+                    $o .= substr($a, $i, strlen($a));
+                    $i=strlen($a);
+                    break;
                 }
-                if ($skip != 0) {
+                if ($bef == '/' and $c == '*') { //开始注释
+                    $skip = 1;
                     $o.=$c;
                     $bef = $c;
                     break;
                 }
                 $o.=$c;
                 if ($c=='[') {
-                    $e=substr($a, 0, $i);
-                    if (strpos($e, '$') !== false) {
-                        $t=1;
-                        $al=0; //数组key长度
-                        $begin=$i+1;
+                    //向前找$
+                    for ($i2 = $i-1; $i2 >= 0; $i2--) {
+                        if ($a[$i2]=='$') {
+                            $t=1; //找到有效的数组
+                            $al=0; //数组key长度
+                            $begin=$i+1;
+                        } elseif (!is_vname($a[$i2])) {
+                            break; //非有效数组名称， 跳过
+                        }
                     }
                 }
                 $bef = $c;
@@ -108,11 +96,8 @@ for ($i0=0; $i0<$lines; $i0++) {
                     $t=0;
                     $bef = $c;
                     break;
-                } else if ($c == '_'
-                or ($c >= 'a' and $c <='z')
-                or ($c >= 'A' and $c <= 'Z')
-                or ($c >= '0' and $c <= '9' and $al > 0) /*不能数字作为开始*/
-                or ($c >= chr(0x80) and $c <= chr(0xff))) {
+                } elseif (is_vname($c)
+                and  ! ($c >= '0' and $c <= '9' and $al == 0)) { /*不能数字作为开始*/
                     $bef = $c;
                     $al++; //数组key长度
                     break;
@@ -128,4 +113,11 @@ for ($i0=0; $i0<$lines; $i0++) {
 }
 if ($change == 1) {
     file_put_contents($f, $o);
+}
+function is_vname($c)
+{
+                return $c == '_'
+                or ($c >= 'a' and $c <='z')
+                or ($c >= 'A' and $c <= 'Z')
+                or ($c >= chr(0x80) and $c <= chr(0xff));
 }
