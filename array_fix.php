@@ -37,23 +37,23 @@ for ($i0=0; $i0<$lines; $i0++) {
     $bef='';
     for ($i=0; $i<strlen($a); $i++) {
         $c=$a[$i];
-        if($skip != 0) {
-            switch($skip) {
-            case 1://注释中
-                if ($bef == '*' and $c=='/') {
-                    $skip = 0;
-                }
-                break;
-            case 2: //单引号字符串后半拉
-                if ($bef != '\\' and $c=="'") {
-                    $skip = 0;
-                }
-                break;
-            case 3: //双引号字符串后半拉
-                if ($bef != '\\' and $c=='"') {
-                    $skip = 0;
-                }
-                break;
+        if ($skip != 0) {
+            switch ($skip) {
+                case 1://注释中
+                    if ($bef == '*' and $c=='/') {
+                        $skip = 0;
+                    }
+                    break;
+                case 2: //单引号字符串后半拉
+                    if ($bef != '\\' and $c=="'") {
+                        $skip = 0;
+                    }
+                    break;
+                case 3: //双引号字符串后半拉
+                    if ($bef != '\\' and $c=='"') {
+                        $skip = 0;
+                    }
+                    break;
             }
             $o.=$c;
             $bef = $c;
@@ -64,16 +64,16 @@ for ($i0=0; $i0<$lines; $i0++) {
             case 0: //先找'['
                 if ($bef != '\\' and $c == "'") {
                     $skip = 2; //后面是单引号字符串， 跳过
-                }else if ($bef != '\\' and $c == "'") {
+                } elseif ($bef != '\\' and $c == "'") {
                     $skip = 3; //后面是双引号字符串， 跳过
-                }else if ($bef == '/' and $c == '*') { //开始注释
+                } elseif ($bef == '/' and $c == '*') { //开始注释
                     $skip = 1;
                 }
                 if ($skip != 0) {
                     $o.=$c;
                     $bef = $c;
                     break;
-                } 
+                }
                 $o.=$c;
                 if ($c=='[') {
                     $e=substr($a, 0, $i);
@@ -91,13 +91,13 @@ for ($i0=0; $i0<$lines; $i0++) {
                     if ($d=='' or is_numeric($d)) { //数组的key是数字，跳过不处理
                         $o.=$d.$c;
                     } else {
-                        file_put_contents("$f.tmp", $o."'$d'".substr($a, $i));
+                        file_put_contents("/tmp/$f.tmp", $o."'$d'".substr($a, $i));
                         for ($i1=$i0+1; $i1<$lines; $i1++) {
-                            file_put_contents("$f.tmp", $all[$i1], FILE_APPEND); //剩余行
+                            file_put_contents("/tmp/$f.tmp", $all[$i1], FILE_APPEND); //剩余行
                         }
                         $err=0;
-                        system("php -l $f.tmp >/dev/null 2>/dev/null", $err);
-                        unlink("$f.tmp");
+                        system("php -l /tmp/$f.tmp >/dev/null 2>/dev/null", $err);
+                        unlink("/tmp/$f.tmp");
                         if ($err==0) { //php测试不出错， 增加单引号
                             $o.="'$d'$c";
                             $change=1;
@@ -108,10 +108,10 @@ for ($i0=0; $i0<$lines; $i0++) {
                     $t=0;
                     $bef = $c;
                     break;
-                } else if ($c=='_'
-                or ($c>='a' and $c <='z')
-                or ($c>='A' and $c<='Z')
-                or ($c>='0' and $c<='9' and $al > 0) /*不能数字作为开始*/
+                } else if ($c == '_'
+                or ($c >= 'a' and $c <='z')
+                or ($c >= 'A' and $c <= 'Z')
+                or ($c >= '0' and $c <= '9' and $al > 0) /*不能数字作为开始*/
                 or ($c >= chr(0x80) and $c <= chr(0xff))) {
                     $bef = $c;
                     $al++; //数组key长度
