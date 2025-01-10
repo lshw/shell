@@ -9,4 +9,4 @@ if [ -h $2 ] ; then
  mkdir $2
 fi
 
-rsync --no-iconv -a8Hvz --delete-before --delete-excluded $1/ $2  $3
+rsync --no-iconv -a8Hvz  --inplace --partial --delete-before --delete-excluded $1/ $2  $3
