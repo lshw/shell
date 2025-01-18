@@ -11,6 +11,7 @@ find /  | grep -v \
  -e "^/4/" \
  -e "^/mnt/" \
  -e "^/tmp/" \
+ -e "^/usr/src/" \
  -e "^/dev/" \
  -e "^lost+found/" \
  -e "^/sys/" \
